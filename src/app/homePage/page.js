@@ -18,7 +18,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, query, where } from "firebase/firestore";
   
 
 export default function HomePage(){
@@ -60,15 +60,11 @@ export default function HomePage(){
         } catch (error) {
             console.log(error);
         }
+        setAllUsers(allUsers);
     }
 
-    useEffect(() => {
-        if (user && user.email) {
-            postAllUsersToFirestoreDatabase(user);
-        }
-    },[user])
-
-
+    
+    
     const addArticle = async (e) => {
         e.preventDefault();
 
@@ -77,27 +73,37 @@ export default function HomePage(){
             articleBody: articleBody,
             author: user.displayName,
             authorPic: user.photoURL,
-            }
+        }
 
+        allArticles.push(newArticle);
+        
         try {
             await addDoc(collection(db, "articles"), newArticle);
-
-            allArticles.push(newArticle);
-
-            alert("Article added to firestore successfully")
+            alert("Article added to firestore successfully");
         } catch (error) {
             console.log(error);
         }
-    }
 
+        setAllAcrticles(allArticles)
+    }
+    
     const discardPost = () => {
         setArticleTitle("");
         setArticleBody("");
     }
-
+    
     const getAllArticles = async () => {
-        
+        const querySnapshot = await getDocs(collection(db, "articles"));
+
+        const newArticles = querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+
+        setAllAcrticles(newArticles);
     }
+    
+    useEffect(() => {
+        getAllArticles()
+        postAllUsersToFirestoreDatabase()
+    },[]);
 
     return(
         <main className="select-none min-h-screen w-full p-3">
@@ -114,21 +120,28 @@ export default function HomePage(){
             </DropdownMenuContent>
             </DropdownMenu>
 
-            <div className="block space-y-3">
+            <div className="block space-y-3 mt-10">
                 <h1>Recent Users</h1>
-                <div className="flex justify-between">
-                    
+                <div className="block space-y-4">
+                    {allUsers.map((user) => (
+                        <div className="flex gap-3 px-2">
+                        <img src={user.userPic} className="rounded-full h-10 w-10"/>
+                        <p className="text-sm mt-2">{`@${user.userEmail}`}</p>
+                    </div>
+                    ))}
                 </div>
             </div>
             <div className="h-full w-full p-3 flex justify-center items-center">
                 <div className="block">
-                    <div className="space-y-3 border-2 border-gray-800 rounded-xl px-10 py-6">
-                        <h1 className="text-gray-500 text-xl">Whats on your mind...</h1>
-                        <Input placeholder="Give a mindblowing title 🤯" value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)}/>
-                        <Textarea value={articleBody} onChange={(e) => setArticleBody(e.target.value)}/>
-                        <div className="flex justify-between">
-                            <Button onClick={addArticle}>Post</Button>
-                            <Button onClick={discardPost} variant="destructive">Discard</Button>
+                    <div className="flex items-center justify-center h-full w-full">
+                        <div className="h-[430px] w-[450px] space-y-3 border-2 border-gray-800 rounded-xl px-10 py-6">
+                            <h1 className="text-gray-500 text-xl">Whats on your mind...</h1>
+                            <Input placeholder="Give a mindblowing title 🤯" value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)}/>
+                            <Textarea value={articleBody} onChange={(e) => setArticleBody(e.target.value)}/>
+                            <div className="flex justify-between">
+                                <Button onClick={addArticle}>Post</Button>
+                                <Button onClick={discardPost} variant="destructive">Discard</Button>
+                            </div>
                         </div>
                     </div>
                     <div className="mt-10">
@@ -137,15 +150,18 @@ export default function HomePage(){
                         </h1>
 
                         <div className="grid grid-cols-1 space-y-4 mt-5">
-                            <div className="h-auto w-auto p-2 border-2 border-gray-800 rounded-xl">
-                                <div className="flex justify-between px-2">
-                                    <img src={user?.photoURL} className="rounded-full h-10 w-10"/>
-                                    <p className="font-semibold">{`Author: ${user.displayName}`}</p>
+                            {allArticles.map((article) => (
+                                <div className="h-auto w-auto p-2 border-2 border-gray-800 rounded-xl">
+                                <div className="flex gap-3 px-2">
+                                    <img src={article.authorPic} className="rounded-full h-10 w-10"/>
+                                    <p className="text-sm mt-2">{`@${article.author}`}</p>
                                 </div>
                                 <div className="p-2">
-                                 Article body   
+                                 <h1 className="text-gray-300 text-xl">{article.articleTitle}</h1>
+                                 <p className="text-gray-500">{article.articleBody}</p>
                                 </div>
                             </div>
+                            ))}
                         </div>
                     </div>
                 </div>
