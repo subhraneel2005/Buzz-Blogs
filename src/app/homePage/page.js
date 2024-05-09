@@ -63,6 +63,14 @@ export default function HomePage(){
         
     }
 
+    const getAllUsers = async () => {
+        const querySnapshot = await getDocs(collection(db, "users"));
+
+        const newUsers = querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+
+        setAllUsers(newUsers);
+    }
+
     
     
     const addArticle = async (e) => {
@@ -80,6 +88,8 @@ export default function HomePage(){
         try {
             await addDoc(collection(db, "articles"), newArticle);
             alert("Article added to firestore successfully");
+            setArticleTitle("");
+            setArticleBody("");
         } catch (error) {
             console.log(error);
         }
@@ -103,6 +113,7 @@ export default function HomePage(){
     useEffect(() => {
         getAllArticles()
         postAllUsersToFirestoreDatabase()
+        getAllUsers()
     },[]);
 
     return(
@@ -120,13 +131,14 @@ export default function HomePage(){
             </DropdownMenuContent>
             </DropdownMenu>
 
+            <div className="flex justify-between h-full w-full">
             <div className="block space-y-3 mt-10">
                 <h1>Recent Users</h1>
                 <div className="block space-y-4">
                     {allUsers.map((user) => (
                         <div className="flex gap-3 px-2">
-                        <img src={user.userPic} className="rounded-full h-10 w-10"/>
-                        <p className="text-sm mt-2">{`@${user.userEmail}`}</p>
+                        <img src={user.userPic} className="rounded-full h-7 w-7"/>
+                        <p className="text-[12px] mt-2">{`@${user.userName}`}</p>
                     </div>
                     ))}
                 </div>
@@ -134,7 +146,7 @@ export default function HomePage(){
             <div className="h-full w-full p-3 flex justify-center items-center">
                 <div className="block">
                     <div className="flex items-center justify-center h-full w-full">
-                        <div className="h-[430px] w-[450px] space-y-3 border-2 border-gray-800 rounded-xl px-10 py-6">
+                        <div className="mr-24 h-[430px] w-[450px] space-y-3 border-2 border-gray-800 rounded-xl px-10 py-6">
                             <h1 className="text-gray-500 text-xl">Whats on your mind...</h1>
                             <Input placeholder="Give a mindblowing title 🤯" value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)}/>
                             <Textarea value={articleBody} onChange={(e) => setArticleBody(e.target.value)}/>
@@ -144,14 +156,18 @@ export default function HomePage(){
                             </div>
                         </div>
                     </div>
-                    <div className="mt-10">
+                </div>
+            </div>
+            </div>
+
+            <div className="mt-10">
                         <h1 className="text-center text-gray-300 text-2xl">
                             Recent feeds 👇
                         </h1>
 
                         <div className="grid grid-cols-1 space-y-4 mt-5">
                             {allArticles.map((article) => (
-                                <div className="h-auto w-auto p-2 border-2 border-gray-800 rounded-xl">
+                                <div className="h-auto w-auto p-2 border-2 border-gray-800 rounded-xl overflow-hidden">
                                 <div className="flex gap-3 px-2">
                                     <img src={article.authorPic} className="rounded-full h-10 w-10"/>
                                     <p className="text-sm mt-2">{`@${article.author}`}</p>
@@ -163,9 +179,8 @@ export default function HomePage(){
                             </div>
                             ))}
                         </div>
-                    </div>
-                </div>
             </div>
+
         </main>
     )
 }
