@@ -41,6 +41,16 @@ export default function HomePage(){
 
     const [allUsers, setAllUsers] = useState([]);
 
+    const [open, setOpen] = useState("hidden");
+
+    const openHandler = () => {
+        if(open === "hidden"){
+            setOpen("block");
+        }else{
+            setOpen("hidden");
+        }
+    }
+
     const postAllUsersToFirestoreDatabase = async() => {
         const newUser = {
             userName: user.displayName,
