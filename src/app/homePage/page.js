@@ -146,7 +146,7 @@ export default function HomePage(){
                 <h1>Recent Users</h1>
                 <div className="block space-y-4">
                     {allUsers.map((user) => (
-                        <div className="flex gap-3 px-2">
+                        <div key={user.userEmail} className="flex gap-3 px-2">
                         <img src={user.userPic} className="rounded-full h-7 w-7"/>
                         <p className="text-[12px] mt-2">{`@${user.userName}`}</p>
                     </div>
@@ -177,7 +177,7 @@ export default function HomePage(){
 
                         <div className="grid grid-cols-1 space-y-4 mt-5">
                             {allArticles.map((article) => (
-                                <div className="h-auto w-auto p-2 border-2 border-gray-800 rounded-xl overflow-hidden">
+                                <div key={article.articleTitle} className="h-auto w-auto p-2 border-2 border-gray-800 rounded-xl overflow-hidden">
                                 <div className="flex gap-3 px-2">
                                     <img src={article.authorPic} className="rounded-full h-10 w-10"/>
                                     <p className="text-sm mt-2">{`@${article.author}`}</p>
